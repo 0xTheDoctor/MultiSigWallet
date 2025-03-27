@@ -14,6 +14,7 @@ contract multiSig {
     Transaction[] public transactions;
 
     event TransactionSubmitted(uint transactionId, address sender, address reciever, uint amount);
+    event TransactionConfirmed(uint transactionId);
 
     constructor(address[] memory _owners, uint _confirmationRequired){
         require(_owners.length>=1,"Must have atleast 2 owners.");
@@ -42,5 +43,7 @@ contract multiSig {
         transactions[_transactionId].isExecuted = true;
         isConfirmed[_transactionId][msg.sender] =true;
     }
+
+
     }
 }
