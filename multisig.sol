@@ -15,6 +15,7 @@ contract multiSig {
 
     event TransactionSubmitted(uint transactionId, address sender, address reciever, uint amount);
     event TransactionConfirmed(uint transactionId);
+    event TransactionExecuted(uint transactionId);
 
     constructor(address[] memory _owners, uint _confirmationRequired){
         require(_owners.length>=1,"Must have atleast 2 owners.");
@@ -40,10 +41,37 @@ contract multiSig {
         require(_transactionId<transactions.length,"Transaction Id not found.");
         require(!isConfirmed[_transactionId][msg.sender], "Transaction has already been confirmed.");
     
-        transactions[_transactionId].isExecuted = true;
+        
         isConfirmed[_transactionId][msg.sender] =true;
+        emit TransactionConfirmed(uint transactionId);
+        if(isTransactionConfirmed(_transactionId)){
+            executeTransaction(_transactionId);
+        }
+        //pass
     }
 
+    function isTransactionConfirmed(uint _transactionId) internal view returns(bool){
+        require(_transactionId<transactions.length,"Transaction Id not found.");
+        uint confirmationCount;
+        for(i=0,i<owners.length;i++){
+            if(isConfirmed[[_transactionId],[owners[i]]]){
+                confirmationCount++;
+            }
+        }
+
+        return confirmationCount>=confirmationRequired;
+
+    }
+
+    function executeTransaction(_transactionId) public payable{
+        require(_transactionId<transactions.length,"Transaction Id not found.");
+        require(!transactions[_transactionId].executed,"Transaction already exec.");
+
+        //transactions[_transactionId].executed = true;
+        (bool success,)= transactions[_transactionId].to.call{value: transactions[_transactionId].value}("");
+        require(success,"Failed Txn exec");
+        emit TransactionExecuted(_transactionId);
+    }
 
     }
 }
